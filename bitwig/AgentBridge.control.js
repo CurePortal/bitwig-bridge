@@ -21,7 +21,7 @@ host.addDeviceNameBasedDiscoveryPair(["Bitwig Agent"], ["Bitwig Agent Reply"]);
 var VERSION = "0.1.0";
 var MFR = 0x7D;
 
-var transport, application, trackBank, cursorTrack, cursorDevice, cursorClip, sceneBank, remotes, masterTrack, masterDevices, masterCursorDevice, masterRemotes, midiIn, midiOut;
+var transport, application, trackBank, cursorTrack, cursorDevice, cursorClip, cursorClipSlots, drumPads, sceneBank, remotes, masterTrack, masterDevices, masterCursorDevice, masterRemotes, midiIn, midiOut;
 
 // ---------------------------------------------------------------- lifecycle
 
@@ -34,9 +34,11 @@ function init() {
     transport = host.createTransportSection();
     application = host.createApplicationSection();
     trackBank = host.createTrackBankSection(24, 2, 0);
-    cursorTrack = host.createCursorTrackSection(0, 0);
+    cursorTrack = host.createCursorTrackSection(0, 16);
     cursorDevice = host.createCursorDeviceSection(8);
-    cursorClip = host.createCursorClipSection(16, 128);
+    cursorClipSlots = cursorTrack.getClipLauncherSlots();
+    cursorClip = cursorTrack.createLauncherCursorClip(16, 128);
+    drumPads = cursorDevice.createDrumPadBank(16);
     sceneBank = host.createSceneBank(16);
     remotes = cursorDevice.createCursorRemoteControlsPage(8);
     masterTrack = host.createMasterTrackSection(0);
@@ -81,6 +83,9 @@ function init() {
     }
     mi(masterRemotes.pageNames());
     mi(masterRemotes.selectedPageIndex());
+
+    for (var dp = 0; dp < drumPads.getSizeOfBank(); dp++) mi(drumPads.getItemAt(dp).name());
+    for (var cs = 0; cs < cursorClipSlots.getSizeOfBank(); cs++) mi(cursorClipSlots.getItemAt(cs).hasContent());
 
     mi(cursorTrack.name());
     mi(cursorTrack.position());
@@ -228,9 +233,12 @@ function dispatch(cmd, args) {
         case "device.prev_page": remotes.selectPreviousPage(true); return { ok: true };
 
         // ---- cursor clip notes
+        case "clip.create": return clipCreate(args);
+        case "clip.launch": cursorClipSlots.launch(args.slot != null ? args.slot : 0); return { ok: true };
         case "clip.write": return clipWrite(args);
         case "clip.clear": cursorClip.clearSteps(); return { ok: true };
         case "clip.clear_step": cursorClip.clearStep(args.step, args.y); return { ok: true };
+        case "drum.pads": return drumPadsList();
 
         // ---- application
         case "app.undo": application.undo(); return { ok: true };
@@ -376,6 +384,24 @@ function deviceSetParam(args) {
 }
 
 // ---------------------------------------------------------------------- clip
+
+function clipCreate(args) {
+    var slot = args.slot != null ? args.slot : 0;
+    var len = args.length != null ? args.length : 4.0;
+    cursorClipSlots.createEmptyClip(slot, len);
+    cursorClipSlots.select(slot);
+    return { ok: true, slot: slot, length: len };
+}
+
+function drumPadsList() {
+    var out = [];
+    var n = drumPads.getSizeOfBank();
+    for (var i = 0; i < n; i++) {
+        var nm = sget(drumPads.getItemAt(i).name());
+        out.push({ pad: i, note: 36 + i, name: nm });
+    }
+    return out;
+}
 
 function clipWrite(args) {
     if (args.step == null || args.y == null) throw new Error("step and y required");

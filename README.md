@@ -88,8 +88,11 @@ Host API version: **17** (Bitwig 4.4.10).
 | `device.remotes` | — | cursor device's remote-control page: param names/values + page list |
 | `device.set_param` | `index`,`value` | value normalized 0..1 |
 | `device.next_page` / `.prev_page` | — | remote-control pages |
+| `clip.create` | `slot`,`length?` | create+select a launcher clip on the cursor track |
+| `clip.launch` | `slot?` | launch a launcher clip |
 | `clip.write` | `step`,`y`,`velocity?`,`length?` | cursor clip note (velocity 0..127, length in beats) |
-| `clip.clear` / `clip.clear_step` | — / `step`,`y` | |
+| `clip.clear` / `clip.clear_step` | — / `step`,`y` | clear the cursor clip (ALWAYS clear before rewriting) |
+| `drum.pads` | — | list the cursor device's drum-machine pads |
 | `app.undo` / `app.redo` / `app.duplicate` | — | |
 | `app.can_undo` / `app.can_redo` | — | |
 
