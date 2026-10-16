@@ -1,0 +1,13 @@
+[Unit]
+Description=Bitwig AgentBridge daemon (virtual MIDI <-> HTTP/MCP)
+After=network-online.target
+
+[Service]
+Type=simple
+WorkingDirectory=/home/cure/bitwig-bridge
+ExecStart=/home/linuxbrew/.linuxbrew/bin/node /home/cure/bitwig-bridge/bin/bitwigd.mjs
+Restart=on-failure
+RestartSec=3
+
+[Install]
+WantedBy=default.target

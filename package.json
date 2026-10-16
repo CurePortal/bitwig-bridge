@@ -1,0 +1,22 @@
+{
+  "name": "bitwig-bridge",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Agent <-> Bitwig bridge over a virtual MIDI port (SysEx RPC) using Bitwig's Control Surface API.",
+  "bin": {
+    "bitwigd": "bin/bitwigd.mjs",
+    "bitwig-mcp": "src/mcp.mjs"
+  },
+  "scripts": {
+    "start": "node bin/bitwigd.mjs",
+    "mcp": "node src/mcp.mjs",
+    "test:wire": "node test/fake-bitwig.mjs"
+  },
+  "dependencies": {
+    "@julusian/midi": "^3.2.0",
+    "@modelcontextprotocol/sdk": "^1.32.1",
+    "ws": "^8.18.0",
+    "zod": "^3.23.8"
+  }
+}
